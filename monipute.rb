@@ -1,8 +1,10 @@
 #!/usr/bin/ruby
+
 require "pp"
 require "timeout"
 
 class PuteError < Exception
+    # Always nice to have your own Error
     def initialise()
         super
     end
@@ -10,11 +12,16 @@ end
 
 module Pute
     class Pute
+        # Basic class, sets defaults and does nothing.
         def timeout
             return 5
         end
         def check()
-            return true
+            # We don't care about return value yet
+            # Call alert()
+            if false
+                alert("OMG!")
+            end
         end
         def alert(msg=nil)
             raise PuteError.new(msg || "#{self.class} has failed!")
@@ -22,6 +29,7 @@ module Pute
     end
 
     class Web < Pute
+        # Checks that url answers with an http code (string) and contains a string in its body
         require "uri"
         require "net/http"
         def initialize(url,expected_string="<body",code="200")
@@ -44,9 +52,13 @@ module Pute
                 alert("#{self.class}: #{e.class} #{e.message} with #{@url}")
             end
         end
+        def to_s
+            return @url
+        end
     end
 
     class Process < Pute
+        # Checks at least one process exists by name, using pgrep
         def initialize(processname)
             super()
             @processname=processname
@@ -61,18 +73,26 @@ module Pute
     end
 end
 
-def hostname()
-    return File.open("/etc/mailname").read().strip()
-end
+#def hostname()
+#    # Used to decide from where to send mail
+#    return File.open("/etc/mailname").read().strip()
+#end
 
-$from = "monipute@"+hostname()
-$from_address = "pute@pute" 
+#$from = "monipute@"+hostname()
+#$from_address = "pute@pute" 
 
-def send_mail(msg,subj="PuteWarn")
-    puts msg 
+#def send_mail()
+    # TODO
+#end
+
+def alert(msg)
+    # send_mail(msg,subj="PuteWarn")
+    # TODO
+    puts msg # This is fine if running from Cron, because cron will send a mail 
 end
 
 res=""
+# Here goes your tests
 [
     Pute::Process.new("bash"),
     Pute::Web.new("http://google.fr/",expected_string="<body",code="301"),
@@ -81,7 +101,7 @@ res=""
     begin
         Timeout::timeout(s.timeout) { s.check }
     rescue Timeout::Error => e
-        res << "#{e.message}" << "\n\n"
+        res << "We waited too long on #{s.to_s}" << "\n\n"
     rescue PuteError => e
         res << "#{e.message}" << "\n\n"
     rescue Exception => e
@@ -89,4 +109,4 @@ res=""
     end
 end
 
-send_mail(res) if res!=""
+alert(res) if res!=""
