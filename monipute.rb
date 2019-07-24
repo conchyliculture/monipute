@@ -6,7 +6,7 @@ require "timeout"
 
 class PuteError < Exception
     # Always nice to have your own Error
-    def initialise(msg)
+    def initialize(msg)
         super
     end
 end
