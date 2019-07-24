@@ -1,21 +1,20 @@
 #!/usr/bin/ruby
 
+require "openssl"
 require "pp"
 require "timeout"
 
 class PuteError < Exception
     # Always nice to have your own Error
-    def initialise()
+    def initialise(msg)
         super
     end
 end
 
 module Pute
     class Pute
+        attr_accessor :timeout
         # Basic class, sets defaults and does nothing.
-        def timeout
-            return 5
-        end
         def check()
             # We don't care about return value yet
             # Call alert()
@@ -32,16 +31,21 @@ module Pute
         # Checks that url answers with an http code (string) and contains a string in its body
         require "uri"
         require "net/http"
-        def initialize(url,expected_string="<body",code="200")
+        def initialize(url, expected_string: nil, code: "200", timeout: 5)
             super()
-            @url=url
-            @code=code
-            @expected_string=expected_string
+            @url = url
+            @code = code
+            @expected_string = expected_string
+            @timeout = timeout
+        end
+
+        def get_stuff
+            return Net::HTTP.get_response(URI(@url))
         end
 
         def check
             begin
-                pute = Net::HTTP.get_response(URI(@url))
+                pute = get_stuff()
                 unless pute.code == @code
                     alert("Error fetching #{@url} got code #{pute.code}, expected #{@code}")
                 end
@@ -54,6 +58,19 @@ module Pute
         end
         def to_s
             return @url
+        end
+    end
+
+    class Webs < Web
+        def get_stuff()
+
+            uri = URI(@url)
+            response = nil
+            Net::HTTP.start(uri.host, uri.port, :use_ssl => (uri.port == 443), :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
+                request = Net::HTTP::Get.new uri
+                response = http.request request
+            end
+            return response
         end
     end
 
@@ -73,20 +90,8 @@ module Pute
     end
 end
 
-#def hostname()
-#    # Used to decide from where to send mail
-#    return File.open("/etc/mailname").read().strip()
-#end
 
-#$from = "monipute@"+hostname()
-#$from_address = "pute@pute" 
-
-#def send_mail()
-    # TODO
-#end
-
-def alert(msg)
-    # send_mail(msg,subj="PuteWarn")
+def error(msg)
     # TODO
     puts msg # This is fine if running from Cron, because cron will send a mail 
 end
@@ -109,4 +114,4 @@ res=""
     end
 end
 
-alert(res) if res!=""
+error(res) if res!=""
