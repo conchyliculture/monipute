@@ -100,7 +100,7 @@ res=""
 # Here goes your tests
 [
     Pute::Process.new("bash"),
-    Pute::Web.new("http://google.fr/",expected_string="<body",code="301"),
+    Pute::Web.new("http://google.fr/",expected_string: "<body",code: "301"),
     Pute::Web.new("https://twitter.com/"),
 ].each do |s|
     begin
