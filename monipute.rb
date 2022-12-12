@@ -31,12 +31,13 @@ module Pute
         # Checks that url answers with an http code (string) and contains a string in its body
         require "uri"
         require "net/http"
-        def initialize(url, expected_string: nil, code: "200", timeout: 5)
+        def initialize(url, expected_string: nil, code: "200", timeout: 5, extra_headers: {})
             super()
             @url = url
             @code = code
             @expected_string = expected_string
             @timeout = timeout
+            @extra_headers = extra_headers
         end
 
         def get_stuff
@@ -51,6 +52,16 @@ module Pute
                 end
                 if @code == 200 and not pute.body =~ /#{@expected_string}/
                     alert("Error fetching #{@url} couldn't find expected string #{@expected_string}")
+                end
+                if @extra_headers != {}
+                  @extra_headers.each do |k,v|
+                    h = pute.to_hash
+                    if not h[k]
+                      alert("Error fetching #{@url}: expected HTTP response header #{k} not found in #{h}")
+                    elsif h[k] != v
+                      alert("Error fetching #{@url}: expected HTTP response header value for #{k} is '#{v}' but got #{h[k]}")
+                    end
+                  end
                 end
             rescue Exception => e
                 alert("#{self.class}: #{e.class} #{e.message} with #{@url}")
