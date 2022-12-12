@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 require "openssl"
-require "pp"
+require "tempfile"
 require "timeout"
 
 class PuteError < Exception
@@ -51,7 +51,7 @@ module Pute
                 unless pute.code == @code
                     error_messages << "got code #{pute.code}, expected #{@code}"
                 end
-                if @code == 200 and not pute.body =~ /#{@expected_string}/
+                if @expected_string and not pute.body =~ /#{@expected_string}/
                     error_messages << "couldn't find expected string #{@expected_string}"
                 end
                 if @extra_headers != {}
@@ -67,6 +67,7 @@ module Pute
             rescue Exception => e
                 alert("#{self.class}: Error fetching #{@url}: #{e.class} #{e.message}")
             end
+
             if not error_messages.empty?
                 alert("#{self.class}: Error fetching #{@url}: \n\t#{error_messages.join("\n\t")}")
             end
@@ -105,17 +106,39 @@ module Pute
     end
 end
 
+def send_email(content, destination, subject: "Monitoring is sad")
+  file = Tempfile.new('monipute')
+  file.write(content)
+  file.close
+  puts "sending email to #{destination} with file #{file.path}"
+
+  `mail -s "#{subject.strip}" "#{destination}" < "#{file.path}"`
+
+  file.unlink
+end
+
+def send_emails(content, destination, subject: "Monitoring is sad")
+  if destination.class == String
+    send_email(content, destination)
+  elsif destination.class == Array
+    destination.each do |d|
+      send_email(content, d)
+    end
+  end
+end
+
 
 def error(msg)
     # TODO
     puts msg # This is fine if running from Cron, because cron will send a mail 
+#    send_emails(msg, "admin@example.com")
 end
 
 res=""
 # Here goes your tests
 [
     Pute::Process.new("bash"),
-    Pute::Web.new("http://google.fr/",expected_string: "<body",code: "301"),
+    Pute::Web.new("http://google.fr/", expected_string: "<body", code: "301"),
     Pute::Web.new("https://twitter.com/"),
 ].each do |s|
     begin
