@@ -49,18 +49,18 @@ module Pute
             begin
                 pute = get_stuff()
                 unless pute.code == @code
-                    error_messages << "Error fetching #{@url} got code #{pute.code}, expected #{@code}"
+                    error_messages << "got code #{pute.code}, expected #{@code}"
                 end
                 if @code == 200 and not pute.body =~ /#{@expected_string}/
-                    error_messages << "Error fetching #{@url} couldn't find expected string #{@expected_string}"
+                    error_messages << "couldn't find expected string #{@expected_string}"
                 end
                 if @extra_headers != {}
                   @extra_headers.each do |k,v|
                     h = pute.to_hash
                     if not h[k]
-                      error_messages << "Error fetching #{@url}: expected HTTP response header #{k} not found in #{h}"
+                      error_messages << "expected HTTP response header #{k} not found in #{h}"
                     elsif h[k] != v
-                      error_messages << "Error fetching #{@url}: expected HTTP response header value for #{k} is '#{v}' but got #{h[k]}"
+                      error_messages << "expected HTTP response header value for #{k} is '#{v}' but got #{h[k]}"
                     end
                   end
                 end
@@ -68,7 +68,7 @@ module Pute
                 alert("#{self.class}: #{e.class} #{e.message} with #{@url}")
             end
             if not error_messages.empty?
-                alert("#{self.class}: \n\t#{error_messages.join("\n\t")} with #{@url}")
+                alert("#{self.class}: Error fetching #{@url}: \n\t#{error_messages.join("\n\t")} with #{@url}")
             end
         end
         def to_s
