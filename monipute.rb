@@ -65,10 +65,10 @@ module Pute
                   end
                 end
             rescue Exception => e
-                alert("#{self.class}: #{e.class} #{e.message} with #{@url}")
+                alert("#{self.class}: Error fetching #{@url}: #{e.class} #{e.message}")
             end
             if not error_messages.empty?
-                alert("#{self.class}: Error fetching #{@url}: \n\t#{error_messages.join("\n\t")} with #{@url}")
+                alert("#{self.class}: Error fetching #{@url}: \n\t#{error_messages.join("\n\t")}")
             end
         end
         def to_s
