@@ -41,7 +41,7 @@ module Pute
         end
 
         def get_stuff
-            return Net::HTTP.get_response(URI(@url)).force_encoding('utf-8')
+            return Net::HTTP.get_response(URI(@url))
         end
 
         def check
@@ -51,7 +51,7 @@ module Pute
                 unless pute.code == @code
                     error_messages << "got code #{pute.code}, expected #{@code}"
                 end
-                if @expected_string and not pute.body =~ /#{@expected_string}/
+                if @expected_string and not pute.body.force_encoding('utf-8') =~ /#{@expected_string}/
                     error_messages << "couldn't find expected string #{@expected_string}"
                 end
                 if @extra_headers != {}
@@ -87,7 +87,7 @@ module Pute
                 request = Net::HTTP::Get.new uri
                 response = http.request request
             end
-            return response.force_encoding('utf-8')
+            return response
         end
     end
 
