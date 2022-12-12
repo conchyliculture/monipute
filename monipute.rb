@@ -41,7 +41,7 @@ module Pute
         end
 
         def get_stuff
-            return Net::HTTP.get_response(URI(@url))
+            return Net::HTTP.get_response(URI(@url)).force_encoding('utf-8')
         end
 
         def check
@@ -87,7 +87,7 @@ module Pute
                 request = Net::HTTP::Get.new uri
                 response = http.request request
             end
-            return response
+            return response.force_encoding('utf-8')
         end
     end
 
