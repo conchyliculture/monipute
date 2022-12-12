@@ -77,7 +77,8 @@ module Pute
         end
     end
 
-    class Webs < Web
+    class Websus < Web
+      # For when you don't want to check the SSL certificate
         def get_stuff()
 
             uri = URI(@url)
