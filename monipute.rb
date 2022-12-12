@@ -107,7 +107,7 @@ module Pute
     end
 end
 
-def send_email(content, destination, subject: "Monitoring is sad")
+def send_email(content, destination, subject)
   file = Tempfile.new('monipute')
   file.write(content)
   file.close
@@ -120,10 +120,10 @@ end
 
 def send_emails(content, destination, subject: "Monitoring is sad")
   if destination.class == String
-    send_email(content, destination)
+    send_email(content, destination, subject)
   elsif destination.class == Array
     destination.each do |d|
-      send_email(content, d)
+      send_email(content, d, subject)
     end
   end
 end
