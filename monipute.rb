@@ -99,6 +99,19 @@ module Pute
       end
     end
   end
+
+  class LoadAverage < Pute
+    require "vmstat"
+    def initialize(max_load = 90)
+      super()
+      @max_load = max_load
+    end
+
+    def check()
+      l = Vmstat.snapshot.load_average.one_minute
+      alert("Load too high: #{l} > #{@max_load}") if l > @max_load
+    end
+  end
 end
 
 def send_email(content, destination, subject)
@@ -130,6 +143,7 @@ end
 res = ""
 # Here goes your tests
 [
+  Pute::LoadAverage.new(0),
   Pute::Process.new("bash"),
   Pute::Web.new("http://google.fr/", expected_string: "<body", code: "301"),
   Pute::Web.new("https://twitter.com/")
