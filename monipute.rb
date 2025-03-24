@@ -94,7 +94,7 @@ module Pute
 
     def check()
       pids = IO.popen("pgrep \"#{@processname}\"").read().split
-      if pids.size.empty?
+      if pids.empty?
         alert("No process called #{@processname}")
       end
     end
